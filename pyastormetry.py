@@ -19,22 +19,28 @@ RA_KEY = 'OBSRA'
 DEC_KEY = 'OBSDEC'
 
 #solve options
-RADIUS = 3
-DOWNSAMPLE = 8
+RADIUS =   3 
+DOWNSAMPLE = 4
 CPU_LIMIT = 30 
-TEMP_DIR = '/tmp/astromety/'
+LO_PIX_SCALE = 2.5
+HI_PIX_SCALE = 2.55
+SCALE_UNITS = 'arcsecperpix'
+TEMP_DIR = '/tmp/astromety'
 OUT_DIR = '/home/pi/Programs/python-programs/py-astrometry/test/output'
 
-solve_options = {'--ra':None,
-                 '--dec':None,
-                 '--radius':None,
-                 '--overwrite':True,
-                 '--no-background-subtraction':True,
-                 '--no-plots':True,
-                 '--overwrite':True,
-                 '--dir':TEMP_DIR,
-                 '--cpulimit':CPU_LIMIT,
-                 '--downsample':DOWNSAMPLE}
+solve_options = {'--ra': None,
+                 '--dec': None,
+                 '--radius': None,
+                 '--scale-low': LO_PIX_SCALE,
+                 '--scale-high': HI_PIX_SCALE,
+                 '--scale-units': SCALE_UNITS,
+                 '--overwrite': True,
+                 '--no-background-subtraction': True,
+                 '--no-plots': True,
+                 '--overwrite': True,
+                 '--dir': TEMP_DIR,
+                 '--cpulimit': CPU_LIMIT,
+                 '--downsample': DOWNSAMPLE}
 
 
 
@@ -52,7 +58,8 @@ def get_coo(image):
         ra = hdr[RA_KEY]
         dec = hdr[DEC_KEY]
     except KeyError:
-        logging.warninig('coords problem in {}, solve the image blindly'.format(image))
+        logging.warning(
+            'Coords problem in {}, try solve the image blindly'.format(image))
         return None
 
     coords = functools.partial(SkyCoord, ra, dec)
@@ -66,10 +73,11 @@ def create_command(image, solve_options):
     
     if coo is not None:
         c, r = coo
-    else:
         solve_options['--ra'] = c.ra.degree
         solve_options['--dec'] = c.dec.degree
         solve_options['--radius'] = r
+    else:
+        pass
 
     solve_options['--out'] = os.path.basename(image)
     solve_options['--new-fits'] = os.path.join(OUT_DIR, os.path.basename(image))
@@ -79,7 +87,7 @@ def create_command(image, solve_options):
     for key, item in solve_options.iteritems():
         if item is None or item is False:
             pass
-        if item is True:
+        elif item is True:
             cmd.append(str(key))
         else:
             cmd.append(str(key))
@@ -98,7 +106,7 @@ def run_solve(image):
     try:
         logging.info('Solve: {}'.format(image))
         subprocess.check_call(cmd)
-        if os.path.isfile(os.path.join(OUT_DIR, image)):
+        if os.path.isfile(os.path.join(OUT_DIR, os.path.basename(image))):
             logging.info('Solve DONE')
         else:
             logging.warning('Solve FAILED')
