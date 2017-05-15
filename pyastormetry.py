@@ -20,72 +20,92 @@ DEC_KEY = 'OBSDEC'
 
 #solve options
 RADIUS = 3
-DOWNSAMPE = 8
+DOWNSAMPLE = 8
+CPU_LIMIT = 30 
 TEMP_DIR = '/tmp/astromety/'
-OUT_DIR = '/home/pi/Programs/python-programs/pyastrometry/test/'
+OUT_DIR = '/home/pi/Programs/python-programs/py-astrometry/test/output'
 
-more_solve_options = ['--overwrite',
-                      '--no-background-subtraction',
-                      '--no-plots',
-                      '--overwrite']
+solve_options = {'--ra':None,
+                 '--dec':None,
+                 '--radius':None,
+                 '--overwrite':True,
+                 '--no-background-subtraction':True,
+                 '--no-plots':True,
+                 '--overwrite':True,
+                 '--dir':TEMP_DIR,
+                 '--cpulimit':CPU_LIMIT,
+                 '--downsample':DOWNSAMPLE}
 
 
 
-def start_log(main_dir):
-    logging.basicConfig(filename=os.path.join(main_dir, 'solve.log'),
-                        format='%(asctime)s %(message)s', level=logging.INFO)
+def start_log(main_dir, level):
+    numeric_level = getattr(logging, level.upper(), None)
+    log_dir = os.path.join(main_dir, 'solve.log')
+    logging.basicConfig(filename=log_dir,
+                        format='%(asctime)s %(message)s', level=numeric_level)
 
 
 def get_coo(image):
     
     hdr = fits.getheader(image)
-    ra = hdr[RA_KEY]
-    dec = hdr[DEC_KEY]
+    try:
+        ra = hdr[RA_KEY]
+        dec = hdr[DEC_KEY]
+    except KeyError:
+        logging.warninig('coords problem in {}, solve the image blindly'.format(image))
+        return None
+
     coords = functools.partial(SkyCoord, ra, dec)
 
-    return coords(unit=(units.hourangle, units.deg))
+    return coords(unit=(units.hourangle, units.deg)), RADIUS
 
 
-def create_command(image, more_solve_options, r=RADIUS, dsamp=DOWNSAMPE,
-                   tmp=TEMP_DIR, out=OUT_DIR):
-    
+def create_command(image, solve_options):
+
     coo = get_coo(image)
+    
+    if coo is not None:
+        c, r = coo
+    else:
+        solve_options['--ra'] = c.ra.degree
+        solve_options['--dec'] = c.dec.degree
+        solve_options['--radius'] = r
 
-    cmd = ['solve-field',
-           image,
-           '--ra',
-           '{:.3f}'.format(coo.ra.degree),
-           '--dec',
-           '{:.3f}'.format(coo.dec.degree),
-           '--radius',
-           '{}'.format(r),
-           '--downsample',
-           '{}'.format(dsamp),
-           '--dir', 
-           '{}'.format(tmp),
-           '--new-fits',
-           '{}'.format(os.path.join(out, os.path.basename(image)))]
+    solve_options['--out'] = os.path.basename(image)
+    solve_options['--new-fits'] = os.path.join(OUT_DIR, os.path.basename(image))
+    
+    cmd = ['solve-field', image]
 
-    if len(more_solve_options) > 0:
-        cmd += more_solve_options
-
+    for key, item in solve_options.iteritems():
+        if item is None or item is False:
+            pass
+        if item is True:
+            cmd.append(str(key))
+        else:
+            cmd.append(str(key))
+            cmd.append(str(item))
+    
     return cmd
 
 
 def run_solve(image):
     
-    cmd = create_command(image, more_solve_options, RADIUS, DOWNSAMPE,
-                         TEMP_DIR, OUT_DIR)
-
-
+    cmd = create_command(image, solve_options)
+    
     logging.info('solve command: {}'.format(' '.join(cmd)))
     logging.info('SOLVING START')
     
     try:
         logging.info('Solve: {}'.format(image))
         subprocess.check_call(cmd)
-    except IOError:
-        pass
+        if os.path.isfile(os.path.join(OUT_DIR, image)):
+            logging.info('Solve DONE')
+        else:
+            logging.warning('Solve FAILED')
+    except subprocess.CalledProcessError as e:
+        print('Astrometry Error')
+        raise e
+
 
 def load_images(images_dir, patt=FITS_PATTERN):
     
@@ -97,7 +117,7 @@ def load_images(images_dir, patt=FITS_PATTERN):
 
 def main(args):
 
-    start_log(args.images_dir)
+    start_log(args.images_dir, args.logger)
     images = load_images(args.images_dir)
 
     for im in images:
@@ -107,8 +127,10 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Astrometry-py')
     parser.add_argument('--images_dir', type=str,
-                        nargs='?',
-                        help='Images to solve dir')
+                        nargs='?', required=True,
+                        help='Path to images to solve')
+    parser.add_argument('--logger', choices=['INFO', 'WARNING', 'ERROR'],
+                        default='INFO', help='Logger level')
     args = parser.parse_args()
     main(args)
 
