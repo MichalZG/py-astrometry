@@ -19,11 +19,11 @@ RA_KEY = 'OBSRA'
 DEC_KEY = 'OBSDEC'
 
 #solve options
-RADIUS =   3 
+RADIUS =   3 # de
 DOWNSAMPLE = 4
-CPU_LIMIT = 30 
-LO_PIX_SCALE = 2.5
-HI_PIX_SCALE = 2.55
+CPU_LIMIT = 30 # sec
+LO_PIX_SCALE = 2.5 # arcsec/pix
+HI_PIX_SCALE = 2.55 # arcsec/pix
 SCALE_UNITS = 'arcsecperpix'
 TEMP_DIR = '/tmp/astromety'
 OUT_DIR = '/home/pi/Programs/python-programs/py-astrometry/test/output'
