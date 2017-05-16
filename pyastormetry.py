@@ -13,13 +13,12 @@ import subprocess
 
 FITS_PATTERN = '*.fits' # eg '*.fits', '*.fit'
 
-
 #fits keys
 RA_KEY = 'OBSRA'
 DEC_KEY = 'OBSDEC'
 
 #solve options
-RADIUS =   3 # de
+RADIUS =   3 # deg
 DOWNSAMPLE = 4
 CPU_LIMIT = 30 # sec
 LO_PIX_SCALE = 2.5 # arcsec/pix
@@ -41,7 +40,6 @@ solve_options = {'--ra': None,
                  '--dir': TEMP_DIR,
                  '--cpulimit': CPU_LIMIT,
                  '--downsample': DOWNSAMPLE}
-
 
 
 def start_log(main_dir, level):
@@ -141,6 +139,3 @@ if __name__ == "__main__":
                         default='INFO', help='Logger level')
     args = parser.parse_args()
     main(args)
-
-
-
