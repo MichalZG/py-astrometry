@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import os
 import logging
@@ -82,7 +82,7 @@ def create_command(image, solve_options):
     
     cmd = ['solve-field', image]
 
-    for key, item in solve_options.iteritems():
+    for key, item in solve_options.items():
         if item is None or item is False:
             pass
         elif item is True:
