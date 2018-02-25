@@ -1,4 +1,4 @@
-class Suhora_config(Config):
+class Suhora_config:
 
 	FITS_PATTERN = '*.fits'  # eg '*.fits', '*.fit'
 	# log name
