@@ -8,35 +8,33 @@ class Config:
 
 class Suhora_config(Config):
 	# fits keys
-	RA_KEY = 'OBSRA'
-	DEC_KEY = 'OBSDEC'
-	RADIUS = 3  # deg
-	DOWNSAMPLE = 4
-	CPU_LIMIT = 30  # sec
-	LO_PIX_SCALE = 2.5  # arcsec/pix
-	HI_PIX_SCALE = 2.55  # arcsec/pix
-	SCALE_UNITS = 'arcsecperpix'
-	TEMP_DIR = '/tmp/astromety'
+	RA_KEY = 'RA'
+	DEC_KEY = 'DEC'
 
 	# solve options
-	RADIUS = 3  # deg
+	RADIUS = 0.5  # deg
 	DOWNSAMPLE = 4
 	CPU_LIMIT = 30  # sec
-	LO_PIX_SCALE = 2.5  # arcsec/pix
-	HI_PIX_SCALE = 2.55  # arcsec/pix
+	LO_PIX_SCALE = 1.11  # arcsec/pix
+	HI_PIX_SCALE = 1.13  # arcsec/pix
 	SCALE_UNITS = 'arcsecperpix'
 	TEMP_DIR = '/tmp/astromety'
-	DOWNSAMPLE = 4
+	SOLVE_DEPTH = '40,80,100,160,250'
+	
+	
 
 	solve_options = {
 	    '--ra': None,
 	    '--dec': None,
 	    '--radius': None,
+	    '--depth', SOLVE_DEPTH,
 	    '--scale-low': LO_PIX_SCALE,
 	    '--scale-high': HI_PIX_SCALE,
 	    '--scale-units': SCALE_UNITS,
 #	    '--no-background-subtraction': True,
+        '--overwrite': True,
 	    '--no-plots': True,
 	    '--cpulimit': CPU_LIMIT,
+	    '--no-verify': True,
 #	    '--downsample': DOWNSAMPLE
 	}

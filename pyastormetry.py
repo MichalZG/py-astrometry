@@ -11,6 +11,9 @@ from subprocess import Popen, PIPE, STDOUT
 import subprocess
 from config import Suhora_config as config
 
+files_to_rm = ['*.axy', '*.corr', '*.xyls', '*.match',
+               '*.new', '*.rdls', '*.solved', '*.wcs']
+
 
 def start_log(main_dir, level):
     numeric_level = getattr(logging, level.upper(), None)
@@ -62,10 +65,6 @@ def create_command(image, solve_options):
             cmd.append(str(key))
             cmd.append(str(item))
 
-    # add overwrite
-    if args.overwrite:
-        cmd.append('--overwrite')
-
     return cmd
 
 
@@ -79,7 +78,8 @@ def run_solve(image):
     try:
         logging.info('Solve: {}'.format(image))
         subprocess.check_call(cmd)
-        if os.path.isfile(os.path.join(OUT_DIR, os.path.basename(image))):
+        if os.path.isfile(os.path.join(config.OUTPUT_FOLDER_NAME,
+                                       os.path.basename(image))):
             logging.info('Solve DONE')
         else:
             logging.warning('Solve FAILED')
@@ -109,12 +109,12 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Astrometry-py')
-    parser.add_argument('images_dir', type=str,
-                        nargs='?', help='Path to images to solve')
     parser.add_argument('--overwrite', dest='overwrite', action='store_true',
                         help='overwrite original files, default False')
     parser.set_defaults(overwrite=False)
     parser.add_argument('--logger', choices=['INFO', 'WARNING', 'ERROR'],
                         default='INFO', help='Logger level')
+    parser.add_argument('images_dir', help='Path to images to solve')
+
     args = parser.parse_args()
     main(args)
