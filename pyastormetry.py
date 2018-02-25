@@ -52,7 +52,7 @@ def create_command(image, solve_options):
 
     solve_options['--out'] = os.path.basename(image)
     solve_options['--new-fits'] = os.path.join(
-        config.OUTPUT_FOLDER_NAME, os.path.basename(image))
+        args.images_dir, config.OUTPUT_FOLDER_NAME, os.path.basename(image))
 
     cmd = ['solve-field', image]
 
