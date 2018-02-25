@@ -1,5 +1,6 @@
 class Suhora_config:
 
+	#fits pattern
 	FITS_PATTERN = '*.fits'  # eg '*.fits', '*.fit'
 	# log name
 	LOG_FILE_NAME = 'solve.log'
@@ -8,6 +9,7 @@ class Suhora_config:
 	# fits keys
 	RA_KEY = 'RA'
 	DEC_KEY = 'DEC'
+
 
 	# solve options
 	RADIUS = 0.5  # deg
