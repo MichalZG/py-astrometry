@@ -88,7 +88,7 @@ def run_solve(image):
         else:
             logging.warning('Solve FAILED')
     except subprocess.CalledProcessError as e:
-        clear()
+        clean()
         print('Astrometry Error')
         raise e
 
@@ -101,12 +101,14 @@ def load_images(images_dir, patt):
     return images
 
 
-def clear():
+def clean():
     logging.info('Cleaning temp files')
-    if args.overwrite:
+    if args.overwrite is True:
         logging.info('Overwrite raw images')
         shutil.move(os.path.join(args.images_dir,
-                                 config.OUTPUT_FOLDER_NAME), args.images_dir)
+                                 config.OUTPUT_FOLDER_NAME,
+                                 config.FITS_PATTERN),
+                    args.images_dir)
     for i in files_to_rm:
         files = glob.glob(os.path.join(args.images_dir, i))
         for j in files:
@@ -124,7 +126,7 @@ def main(args):
         raise FileNotFoundError('No images has been found')
     for im in images:
         run_solve(im)
-    clear()
+    clean()
 
 
 if __name__ == "__main__":
