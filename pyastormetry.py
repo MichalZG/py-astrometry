@@ -108,7 +108,7 @@ def clean():
         shutil.move(os.path.join(args.images_dir,
                                  config.OUTPUT_FOLDER_NAME,
                                  config.FITS_PATTERN),
-                    args.images_dir)
+                    os.path.join(args.images_dir, config.FITS_PATTERN))
     for i in files_to_rm:
         files = glob.glob(os.path.join(args.images_dir, i))
         for j in files:
