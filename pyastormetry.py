@@ -70,6 +70,8 @@ def create_command(image, solve_options):
 
 def run_solve(image):
 
+    os.makedirs(os.path.join(
+        args.images_dir, config.OUTPUT_FOLDER_NAME), exist_ok=True)
     cmd = create_command(image, config.solve_options)
 
     logging.info('solve command: {}'.format(' '.join(cmd)))
@@ -78,8 +80,8 @@ def run_solve(image):
     try:
         logging.info('Solve: {}'.format(image))
         subprocess.check_call(cmd)
-        if os.path.isfile(os.path.join(config.OUTPUT_FOLDER_NAME,
-                                       os.path.basename(image))):
+        if os.path.isfile(os.path.join(
+                args.images_dir, config.OUTPUT_FOLDER_NAME, os.path.basename(image))):
             logging.info('Solve DONE')
         else:
             logging.warning('Solve FAILED')
