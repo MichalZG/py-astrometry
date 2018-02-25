@@ -27,7 +27,7 @@ class Suhora_config(Config):
 	    '--ra': None,
 	    '--dec': None,
 	    '--radius': None,
-	    '--depth', SOLVE_DEPTH,
+	    '--depth': SOLVE_DEPTH,
 	    '--scale-low': LO_PIX_SCALE,
 	    '--scale-high': HI_PIX_SCALE,
 	    '--scale-units': SCALE_UNITS,
