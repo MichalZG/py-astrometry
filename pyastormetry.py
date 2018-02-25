@@ -112,8 +112,8 @@ def main(args):
     start_log(args.images_dir, args.logger)
     images = load_images(args.images_dir)
     if not images:
-        logging.error('no images has been found')
-        raise FileNotFoundError('no images has been found')
+        logging.error('No images has been found')
+        raise FileNotFoundError('No images has been found')
     for im in images:
         run_solve(im)
     clear()
