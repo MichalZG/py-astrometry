@@ -3,13 +3,14 @@ import sys
 import logging
 import glob
 import argparse
+import shutil
 import functools
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
 from astropy import units
 from subprocess import Popen, PIPE, STDOUT
 import subprocess
-from config import Suhora_config as config
+
 
 files_to_rm = ['*.axy', '*.corr', '*.xyls', '*.match',
                '*.new', '*.rdls', '*.solved', '*.wcs']
@@ -17,7 +18,10 @@ files_to_rm = ['*.axy', '*.corr', '*.xyls', '*.match',
 
 def start_log(main_dir, level):
     numeric_level = getattr(logging, level.upper(), None)
-    log_dir = os.path.join(main_dir, config.LOG_FILE_NAME)
+    os.makedirs(os.path.join(
+        args.images_dir, config.OUTPUT_FOLDER_NAME), exist_ok=True)
+    log_dir = os.path.join(
+        main_dir, config.OUTPUT_FOLDER_NAME, config.LOG_FILE_NAME)
     logging.basicConfig(filename=log_dir,
                         format='%(asctime)s %(message)s', level=numeric_level)
 
@@ -70,11 +74,9 @@ def create_command(image, solve_options):
 
 def run_solve(image):
 
-    os.makedirs(os.path.join(
-        args.images_dir, config.OUTPUT_FOLDER_NAME), exist_ok=True)
     cmd = create_command(image, config.solve_options)
 
-    logging.info('solve command: {}'.format(' '.join(cmd)))
+    logging.info('Solve command: {}'.format(' '.join(cmd)))
     logging.info('SOLVING START')
 
     try:
@@ -91,7 +93,7 @@ def run_solve(image):
         raise e
 
 
-def load_images(images_dir, patt=config.FITS_PATTERN):
+def load_images(images_dir, patt):
 
     images = sorted(glob.glob(os.path.join(images_dir, patt)))
     logging.info('{} images found'.format(len(images)))
@@ -100,9 +102,13 @@ def load_images(images_dir, patt=config.FITS_PATTERN):
 
 
 def clear():
-    print('cleaning.....')
+    logging.info('Cleaning temp files')
+    if args.overwrite:
+        logging.info('Overwrite raw images')
+        shutil.move(os.path.join(args.images_dir,
+                                 config.OUTPUT_FOLDER_NAME), args.images_dir)
     for i in files_to_rm:
-        files = glob.glob(os.path.join(args.images_dir,i))
+        files = glob.glob(os.path.join(args.images_dir, i))
         for j in files:
             os.remove(j)
 
@@ -110,7 +116,8 @@ def clear():
 def main(args):
 
     start_log(args.images_dir, args.logger)
-    images = load_images(args.images_dir)
+    logging.info('Arguments: ',args)
+    images = load_images(args.images_dir, config.FITS_PATTERN)
     if not images:
         logging.error('No images has been found')
         raise FileNotFoundError('No images has been found')
@@ -118,14 +125,19 @@ def main(args):
         run_solve(im)
     clear()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Astrometry-py')
     parser.add_argument('--overwrite', dest='overwrite', action='store_true',
                         help='overwrite original files, default False')
     parser.set_defaults(overwrite=False)
+    parser.add_argument('--config', dest='config', default='Telescope60',
+                        nargs='?', help='Configuration name, default Telescope60')
     parser.add_argument('--logger', choices=['INFO', 'WARNING', 'ERROR'],
                         default='INFO', help='Logger level')
     parser.add_argument('images_dir', help='Path to images to solve')
-
     args = parser.parse_args()
+    print(args)
+    config = getattr(__import__('config', fromlist=[args.config]), args.config)
+
     main(args)
