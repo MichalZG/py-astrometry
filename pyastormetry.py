@@ -86,6 +86,7 @@ def run_solve(image):
         else:
             logging.warning('Solve FAILED')
     except subprocess.CalledProcessError as e:
+        clear()
         print('Astrometry Error')
         raise e
 
@@ -115,7 +116,7 @@ def main(args):
         raise FileNotFoundError('no images has been found')
     for im in images:
         run_solve(im)
-
+    clear()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Astrometry-py')
