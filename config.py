@@ -1,12 +1,10 @@
-class Config:
+class Suhora_config(Config):
 
 	FITS_PATTERN = '*.fits'  # eg '*.fits', '*.fit'
 	# log name
 	LOG_FILE_NAME = 'solve.log'
 	# output folder name, used if overwrite False
 	OUTPUT_FOLDER_NAME = 'astrometry_output'
-
-class Suhora_config(Config):
 	# fits keys
 	RA_KEY = 'RA'
 	DEC_KEY = 'DEC'
