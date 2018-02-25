@@ -33,6 +33,7 @@ class Suhora_config(Config):
 	    '--scale-units': SCALE_UNITS,
 #	    '--no-background-subtraction': True,
         '--overwrite': True,
+        '--dir': OUTPUT_FOLDER_NAME,
 	    '--no-plots': True,
 	    '--cpulimit': CPU_LIMIT,
 	    '--no-verify': True,
