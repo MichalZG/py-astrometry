@@ -116,7 +116,8 @@ def clear():
 def main(args):
 
     start_log(args.images_dir, args.logger)
-    logging.info('Arguments: ',args)
+    for i, k in vars(args):
+        logging.info('{}: {}',i, k)
     images = load_images(args.images_dir, config.FITS_PATTERN)
     if not images:
         logging.error('No images has been found')
