@@ -98,6 +98,14 @@ def load_images(images_dir, patt=config.FITS_PATTERN):
     return images
 
 
+def clear():
+    print('cleaning.....')
+    for i in files_to_rm:
+        files = glob.glob(args.images_dir + i)
+        for j in files:
+            os.remove(j)
+
+
 def main(args):
 
     start_log(args.images_dir, args.logger)
