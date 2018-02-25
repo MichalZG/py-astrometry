@@ -1,6 +1,5 @@
-
-
 import os
+import sys
 import logging
 import glob
 import argparse
@@ -10,51 +9,22 @@ from astropy.coordinates import SkyCoord
 from astropy import units
 from subprocess import Popen, PIPE, STDOUT
 import subprocess
-
-FITS_PATTERN = '*.fits' # eg '*.fits', '*.fit'
-
-#fits keys
-RA_KEY = 'OBSRA'
-DEC_KEY = 'OBSDEC'
-
-#solve options
-RADIUS =   3 # deg
-DOWNSAMPLE = 4
-CPU_LIMIT = 30 # sec
-LO_PIX_SCALE = 2.5 # arcsec/pix
-HI_PIX_SCALE = 2.55 # arcsec/pix
-SCALE_UNITS = 'arcsecperpix'
-TEMP_DIR = '/tmp/astromety'
-OUT_DIR = '/home/pi/Programs/python-programs/py-astrometry/test/output'
-
-solve_options = {'--ra': None,
-                 '--dec': None,
-                 '--radius': None,
-                 '--scale-low': LO_PIX_SCALE,
-                 '--scale-high': HI_PIX_SCALE,
-                 '--scale-units': SCALE_UNITS,
-                 '--overwrite': True,
-                 '--no-background-subtraction': True,
-                 '--no-plots': True,
-                 '--overwrite': True,
-                 '--dir': TEMP_DIR,
-                 '--cpulimit': CPU_LIMIT,
-                 '--downsample': DOWNSAMPLE}
+from config import Suhora_config as config
 
 
 def start_log(main_dir, level):
     numeric_level = getattr(logging, level.upper(), None)
-    log_dir = os.path.join(main_dir, 'solve.log')
+    log_dir = os.path.join(main_dir, config.LOG_FILE_NAME)
     logging.basicConfig(filename=log_dir,
                         format='%(asctime)s %(message)s', level=numeric_level)
 
 
 def get_coo(image):
-    
+
     hdr = fits.getheader(image)
     try:
-        ra = hdr[RA_KEY]
-        dec = hdr[DEC_KEY]
+        ra = hdr[config.RA_KEY]
+        dec = hdr[config.DEC_KEY]
     except KeyError:
         logging.warning(
             'Coords problem in {}, try solve the image blindly'.format(image))
@@ -62,13 +32,13 @@ def get_coo(image):
 
     coords = functools.partial(SkyCoord, ra, dec)
 
-    return coords(unit=(units.hourangle, units.deg)), RADIUS
+    return coords(unit=(units.hourangle, units.deg)), config.RADIUS
 
 
 def create_command(image, solve_options):
 
     coo = get_coo(image)
-    
+
     if coo is not None:
         c, r = coo
         solve_options['--ra'] = c.ra.degree
@@ -78,8 +48,9 @@ def create_command(image, solve_options):
         pass
 
     solve_options['--out'] = os.path.basename(image)
-    solve_options['--new-fits'] = os.path.join(OUT_DIR, os.path.basename(image))
-    
+    solve_options['--new-fits'] = os.path.join(
+        config.OUTPUT_FOLDER_NAME, os.path.basename(image))
+
     cmd = ['solve-field', image]
 
     for key, item in solve_options.items():
@@ -90,17 +61,21 @@ def create_command(image, solve_options):
         else:
             cmd.append(str(key))
             cmd.append(str(item))
-    
+
+    # add overwrite
+    if args.overwrite:
+        cmd.append('--overwrite')
+
     return cmd
 
 
 def run_solve(image):
-    
-    cmd = create_command(image, solve_options)
-    
+
+    cmd = create_command(image, config.solve_options)
+
     logging.info('solve command: {}'.format(' '.join(cmd)))
     logging.info('SOLVING START')
-    
+
     try:
         logging.info('Solve: {}'.format(image))
         subprocess.check_call(cmd)
@@ -113,8 +88,8 @@ def run_solve(image):
         raise e
 
 
-def load_images(images_dir, patt=FITS_PATTERN):
-    
+def load_images(images_dir, patt=config.FITS_PATTERN):
+
     images = sorted(glob.glob(os.path.join(images_dir, patt)))
     logging.info('{} images found'.format(len(images)))
 
@@ -125,16 +100,20 @@ def main(args):
 
     start_log(args.images_dir, args.logger)
     images = load_images(args.images_dir)
-
+    if not images:
+        logging.error('no images has been found')
+        raise FileNotFoundError('no images has been found')
     for im in images:
         run_solve(im)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Astrometry-py')
-    parser.add_argument('--images_dir', type=str,
-                        nargs='?', required=True,
-                        help='Path to images to solve')
+    parser.add_argument('images_dir', type=str,
+                        nargs='?', help='Path to images to solve')
+    parser.add_argument('--overwrite', dest='overwrite', action='store_true',
+                        help='overwrite original files, default False')
+    parser.set_defaults(overwrite=False)
     parser.add_argument('--logger', choices=['INFO', 'WARNING', 'ERROR'],
                         default='INFO', help='Logger level')
     args = parser.parse_args()
