@@ -94,7 +94,7 @@ def run_solve(image):
 
 
 def load_images(images_dir, patt):
-
+    print(os.path.join(images_dir, patt))
     images = sorted(glob.glob(os.path.join(images_dir, patt)))
     logging.info('{} images found'.format(len(images)))
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
                         default='INFO', help='Logger level')
     parser.add_argument('images_dir', help='Path to images to solve')
     args = parser.parse_args()
-    print(args)
+
     config = getattr(__import__('config', fromlist=[args.config]), args.config)
 
     main(args)
