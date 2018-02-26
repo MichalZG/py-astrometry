@@ -110,6 +110,8 @@ def clean():
                                                 config.OUTPUT_FOLDER_NAME,
                                                 config.FITS_PATTERN))
         for image in images_to_move:
+            print(image)
+            logging.info('Overwrite image: {}'.format(image))
             shutil.move(image, os.path.join(args.images_dir, image))
 
     for i in files_to_rm:
