@@ -12,7 +12,7 @@ Python >= 3
 Clone this repository or download as zip
 
 ### Running
-
+In program directory run
 ```
 python pyastormetry.py [--overwrite] [--config [CONFIG]] [--logger {INFO,WARNING,ERROR}] <path_to_files>
 ```
